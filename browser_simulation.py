@@ -46,6 +46,7 @@ class Cursor:
 		return self.position
 
 class User(Browser,Cursor):#User uses both Browser and Cursor
+	time_start = 0
 	def __init__(self,time_limit):
 		self.time_limit=time_limit
 		self.s = sched.scheduler(time.time, time.sleep)
@@ -94,45 +95,31 @@ class User(Browser,Cursor):#User uses both Browser and Cursor
 		print str(Cursor.cur_position()) + " @ " + str(a)
 
 	def build_log(self,Cursor):
-		#build the schedule up to fire the log function every 100 miliseconds. 
-		#amt is the amount of seconds you want to run fo
-		x=0
-		i=.1
-		# self.s.enter(0,1,self.eval_position,(Browser,Cursor,))
-		while x<self.time_limit*10:#ten miliseconds in 1 second.
-			self.s.enter(i, 8, self.log_cursor, (Cursor,))
-			i+=.1
+		x = 0#iterator
+		milli = .1#add per second
+		while x < self.time_limit*10:
 			x+=1
-		# self.eval_position(Browser,Cursor)#evaluate position and move cursor accordingly
-		return self.s
-		
+			threading.Timer(milli, self.log_cursor,(Cursor,)).start()
+			milli+=.1
 		
 	
 
 user_excitement = .0005
-web = Browser(1366,768)
+web = Browser(1366,768)#width and height
 #draw ad on in there
-web.draw_ad(800,17,300,255)
-web.draw_ad_button(web.ad)
-web.make_partition()
-usr = User(2)
-cur = Cursor(1,1)
-schedule  = usr.build_log(cur)
-
-milli_time = round(time.time()*10)
-
+web.draw_ad(800,17,300,255)#xposition,yposition,width and height
+web.draw_ad_button(web.ad)#place that
+web.make_partition()#function for making variables and partitions a bit more legible
+usr = User(15)#int passed is time limit in seconds
+cur = Cursor(1,1)#cursor position
+usr.build_log(cur)#build the threading log
+stop_time = round(time.time()*10)#start the timer so program knows when to end
 while 1:
 	cur_time = round(time.time()*10)
-	schedule.run()
-	if milli_time+150 >= cur_time:
-		# new_time = round(time.time()*10)
-		# if new_time >= cur_time+1:
-			# print usr.log_cursor(cur)
+	if stop_time+(usr.time_limit*10) >= cur_time:
 		to_move = usr.eval_position(web,cur)
 		cur.move_cursor(to_move[0],to_move[1])
-		# print " new time  " + str(new_time) + "compared to old time:" + str(cur_time+1)
 	else:
-		print cur_time
 		sys.exit()
 
 	
